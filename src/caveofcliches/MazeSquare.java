@@ -5,7 +5,8 @@
  */
 package caveofcliches;
 
-import java.awt.Color;
+import java.util.HashMap;
+import javafx.scene.paint.Color;
 
 /**
  *
@@ -13,12 +14,25 @@ import java.awt.Color;
  */
 public class MazeSquare {
 
-    private int type = 0; // 0 open, 1 wall, 2 start, 3 finish, 4 magma
-    // int item = 0; // 0 empty, 1 pickup_type1, 2 pickup_type2
-    private Color color = Color.LIGHT_GRAY;
-    private Color [] colors = { Color.LIGHT_GRAY, Color.BLACK, Color.GREEN, Color.RED, Color.ORANGE, Color.YELLOW };
-    
-    public MazeSquare(int t) {
+    private final int size;
+    private int type = 0; // 0 open, 1 wall, 2 start, 3 finish
+    private Color color;
+    private final Color [] colors = { Color.ALICEBLUE, Color.BLUE, Color.GREEN, Color.RED };
+    private HashMap color_map;
+
+    public MazeSquare(int s, int t) {
+
+        // Create a hash map
+        color_map = new HashMap();
+
+        // Put elements to the map
+        color_map.put(Color.ALICEBLUE, "OPEN");
+        color_map.put(Color.BLUE, "WALL");
+        color_map.put(Color.GREEN, "START");
+        color_map.put(Color.RED, "FINISH");
+        color_map.put(Color.ORANGE, "HAZARD");
+        
+        this.size = s;
         this.type = t;
         color = colors [t];
     }
@@ -27,21 +41,20 @@ public class MazeSquare {
         return color;
     }
 
+    public String getName () {
+        return color_map.get(color).toString();
+    }
+    
+    public int getSize () {
+        return size;
+    }
+    
     public int getType () {
         return type;
     }
     
     public boolean isPassable () {
         return type != 1;
-    }
-
-    public boolean isMagma () {
-        return type == 4;
-    }
-    
-    public void setMagma () {
-        type = 4;
-        color = colors [4];
     }
 
     public void setType (int x) {

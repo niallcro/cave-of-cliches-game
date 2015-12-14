@@ -5,9 +5,10 @@
  */
 package caveofcliches;
 
-import java.awt.Graphics2D;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 
 /**
  *
@@ -15,37 +16,87 @@ import java.awt.event.KeyListener;
  */
 public class Maze {
     
-    private int width = 12;
-    private int height = 12;
-    private MazeSquare [][] maze = new MazeSquare [width][height];
+    private final int tile_width;
+    private final int tile_height;
+    private final int start_x = 3;
+    private final int start_y = 9;
+    private final int tilesize;
+    private final int width;
+    private final int height;
+    private final MazeSquare [][] maze;
+    public boolean DEBUG;
     
-    /* static maze for testing */
-    private int mazeint [][] = {
+    // static maze for testing
+    public static final int mazeint [][] = {
     
         // 0 empty, 1 wall, 2, start, 3 finish, 4 magma
         {1,1,1,1,1,1,1,1,1,1,1,1},
-        {1,2,0,0,1,1,1,0,0,0,0,1},
+        {1,0,0,0,1,1,1,0,0,0,0,1},
         {1,0,0,0,0,0,1,0,1,0,0,1},
         {1,0,0,0,1,0,1,0,0,0,0,1},
         {1,0,1,0,1,0,1,0,1,1,0,1},
         {1,0,1,0,1,0,1,0,1,0,0,1},
         {1,0,1,1,1,0,1,0,1,0,1,1},
-        {1,4,1,0,0,0,1,0,1,0,1,1},
+        {1,0,1,0,0,0,1,0,1,0,1,1},
         {1,0,1,0,1,1,1,0,1,0,0,1},
-        {1,1,0,0,0,0,0,0,1,0,0,1},
+        {1,1,0,2,0,0,0,0,1,0,0,1},
         {1,0,0,0,0,1,1,1,1,0,3,1},
         {1,1,1,1,1,1,1,1,1,1,1,1}
     };
+
+    // static maze for testing
+    public static final int mazeint2 [][] = {
     
-    public Maze() {
+        // 0 empty, 1 wall, 2, start, 3 finish, 4 magma
+        {1,1,1,1,1,1,1,1,1,1,1,1},
+        {1,0,0,0,0,0,0,0,0,0,0,1},
+        {1,0,0,0,0,0,0,0,0,0,0,1},
+        {1,0,0,0,1,0,0,0,0,2,0,1},
+        {1,0,0,0,1,0,0,0,0,0,0,1},
+        {1,0,0,0,1,0,0,0,0,0,0,1},
+        {1,0,0,0,1,0,0,0,0,0,1,1},
+        {1,0,0,0,0,0,0,0,0,0,1,1},
+        {1,0,0,0,0,0,0,0,0,0,0,1},
+        {1,0,0,0,0,0,0,0,0,0,0,1},
+        {1,0,0,0,0,0,0,0,0,0,0,1},
+        {1,1,1,1,1,1,1,1,1,1,1,1}
+    };
+
+    public Maze(int tilesize, int[][] level) {
+        
+        this.tilesize = tilesize;
+        this.tile_width = level.length;
+        this.tile_height = level[0].length;
+        this.width = tile_width * tilesize;
+        this.height = tile_height * tilesize;
+        
+        // set debug
+        DEBUG = false;
+        
+        // initialize maze
+        maze = new MazeSquare [tile_width][tile_height];
+                
         // populate the Maze array with new MazeSquare objects
-        for (int x = 0; x < width; x++)
-            for (int y = 0; y < height; y++)
-                maze [x][y] = new MazeSquare (mazeint [x][y]);        
+        for (int x = 0; x < tile_width; x++)
+            for (int y = 0; y < tile_height; y++)
+                maze [x][y] = new MazeSquare (tilesize, level [x][y]);        
     }
     
     public MazeSquare getSquare (int x, int y) {
         return maze [x][y];
+    }
+
+    public MazeSquare getSquareAtPoint (int x, int y) {
+        //System.out.println((int) x/tilesize + ", " + (int) y/tilesize);
+        return maze [x/tilesize][y/tilesize];
+    }
+    
+    public int getTileHeight () {
+        return tile_height;
+    }
+    
+    public int getTileWidth () {
+        return tile_width;
     }
 
     public int getHeight () {
@@ -56,37 +107,50 @@ public class Maze {
         return width;
     }
     
+    public int getStartX() {
+        return start_x;
+    }
+    
+    public int getStartY() {
+        return start_y;
+    }
+        
     public boolean isPassable (int x, int y) {
         return maze[y][x].isPassable();
     }
 
-    public boolean isMagma (int x, int y) {
-        return maze[y][x].isMagma();
-    }
-    
     public boolean isExit (int x, int y) {
         return maze[y][x].isExit();
     }
 
-    public void moveMagma () {
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                if (maze [y][x].isMagma()) {
-                    if (inMaze(x-1,y) && maze [y][x-1].isOpen()) maze [y][x-1].setType(5);
-                    if (inMaze(x+1,y) && maze [y][x+1].isOpen()) maze [y][x+1].setType(5);
-                    if (inMaze(x,y-1) && maze [y-1][x].isOpen()) maze [y-1][x].setType(5);
-                    if (inMaze(x,y+1) && maze [y+1][x].isOpen()) maze [y+1][x].setType(5);
-                }
-            }  
-        }
-        for (int x = 0; x < width; x++) {
-            for (int y = 0; y < height; y++) {
-                    if (maze [y][x].getType()==5) maze [y][x].setMagma();
-            }  
-        }
+    public boolean isPassable (double x, double y) {
+        //System.out.println((int) x/tilesize + ", " + (int) y/tilesize);
+        return maze [(int) x/tilesize][(int) y/tilesize].isPassable();
+    }
+
+    public boolean isExit (double x, double y) {
+        //System.out.println((int) x/tilesize + ", " + (int) y/tilesize);
+        return maze [(int) x/tilesize][(int) y/tilesize].isExit();
     }
     
-    public boolean inMaze (int x, int y) {
-        return (x > 0 && x < width) && (y > 0 && y < height);
+    public void render (GraphicsContext gc) {
+        for (int y = 0; y < tile_width; y++) {
+            for (int x = 0; x < tile_height; x++) {
+                gc.setFill(getSquare(y,x).getColor());
+                gc.fillRect(x * tilesize, y * tilesize, tilesize, tilesize);
+                
+                if (DEBUG) {
+                    // setup font for text
+                    Font theFont = Font.font("Helvetica", FontWeight.BOLD, 20);
+                    gc.setFont(theFont);
+                    gc.setFill(Color.WHITE);
+                    gc.setStroke(Color.BLACK);
+                    gc.setLineWidth(1);
+
+                    gc.fillText("[" + x + "," + y + "]", x * tilesize + 5, y * tilesize + 30);
+                    gc.strokeText("[" + x + "," + y + "]", x * tilesize + 5, y * tilesize + 30);
+                }
+            }
+        }
     }
 }

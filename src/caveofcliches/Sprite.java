@@ -1,9 +1,9 @@
 package caveofcliches;
 
-import javafx.geometry.Bounds;
 import javafx.scene.image.Image;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.geometry.Rectangle2D;
+import org.javatuples.Pair;
 
 public class Sprite
 {
@@ -16,6 +16,7 @@ public class Sprite
     private double width;
     private double height;
     private double direction;
+    public boolean DEBUG;
     public static final double NONE = 0;
     public static final double UP = 1;
     public static final double UP_RIGHT = 2;
@@ -26,8 +27,8 @@ public class Sprite
     public static final double LEFT = 7;
     public static final double UP_LEFT = 8;
     
-    public Sprite()
-    {
+    public Sprite() {
+        DEBUG = false;
         positionX = 0;
         positionY = 0;    
         velocityX = 0;
@@ -93,7 +94,27 @@ public class Sprite
     {
         return velocityX + velocityY;
     }
+    
+    public Pair getTopLeft() {
+        Pair<Double,Double> pair = Pair.with(positionX,positionY);
+        return pair;
+    }
 
+    public Pair getTopRight() {
+        Pair<Double,Double> pair = Pair.with(positionX,positionY+width);
+        return pair;
+    }
+
+    public Pair getBottomLeft() {
+        Pair<Double,Double> pair = Pair.with(positionX+height,positionY);
+        return pair;
+    }
+    
+    public Pair getBottomRight() {
+        Pair<Double,Double> pair = Pair.with(positionX+height,positionY+width);
+        return pair;
+    }
+    
     public void setDirection(double d)
     {
         direction = d;
@@ -135,7 +156,7 @@ public class Sprite
                 }
             }
         }
-    }    
+    }
 
     public void reverseDirection()
     {
@@ -154,8 +175,8 @@ public class Sprite
     
     public void addVelocity(double x, double y)
     {
-        velocityX += x;
-        velocityY += y;
+        if (x != 0) velocityX = x;
+        if (y !=0) velocityY = y;
     }
 
     public void reduceVelocity(double x, double y)
